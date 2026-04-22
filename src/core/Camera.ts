@@ -7,15 +7,21 @@ export default class Camera {
 
   constructor(canvas: HTMLCanvasElement) {
     this.instance = new THREE.PerspectiveCamera(
-      75,
+      60,
       window.innerWidth / window.innerHeight,
-      0.1,
-      1000
+      0.5,
+      2000
     )
-    this.instance.position.set(0, 2, 5)
+    // Perched on a hill looking across the lake toward the sunset
+    this.instance.position.set(40, 22, 70)
 
     this.controls = new OrbitControls(this.instance, canvas)
-    this.controls.enableDamping = true
+    this.controls.enableDamping  = true
+    this.controls.dampingFactor  = 0.05
+    this.controls.target.set(0, 2, 0)
+    this.controls.maxPolarAngle  = Math.PI / 2.1 // prevent going underground
+    this.controls.minDistance    = 5
+    this.controls.maxDistance    = 180
   }
 
   resize() {

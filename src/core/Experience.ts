@@ -2,6 +2,9 @@ import * as THREE from 'three'
 import Camera from './Camera'
 import Renderer from './Renderer'
 import Debug from '../debug/Debug'
+import Terrain from '../world/Terrain'
+import Lighting from '../world/Lighting'
+import SkyEnvironment from '../world/SkyEnvironment'
 
 export default class Experience {
   canvas: HTMLCanvasElement
@@ -10,25 +13,23 @@ export default class Experience {
   renderer: Renderer
   debug: Debug
 
+  private terrain: Terrain
+  private lighting: Lighting
+  private sky: SkyEnvironment
+
   constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-    this.scene = new THREE.Scene()
-    this.debug = new Debug()
-    this.camera = new Camera(this.canvas)
+    this.canvas   = canvas
+    this.scene    = new THREE.Scene()
+    this.debug    = new Debug()
+    this.camera   = new Camera(this.canvas)
     this.renderer = new Renderer(this.canvas)
 
-    this.logPolygonCount()
+    this.lighting = new Lighting(this.scene)
+    this.sky      = new SkyEnvironment(this.scene, this.renderer.instance)
+    this.terrain  = new Terrain(this.scene)
 
     window.addEventListener('resize', () => this.onResize())
     this.tick()
-  }
-
-  private logPolygonCount() {
-    // Logs total triangle/polygon count of the scene after each frame
-    const info = this.renderer.instance.info
-    console.log(
-      `[Polygons] triangles: ${info.render.triangles} | calls: ${info.render.calls} | geometries: ${info.memory.geometries}`
-    )
   }
 
   private onResize() {
@@ -38,22 +39,17 @@ export default class Experience {
 
   private tick() {
     this.debug.begin()
-
     this.camera.update()
     this.renderer.render(this.scene, this.camera.instance)
-
-    // Log polygon count every frame (visible in devtools console)
-    const info = this.renderer.instance.info
-    console.debug(
-      `[Polygons] triangles: ${info.render.triangles} | geometries: ${info.memory.geometries} | textures: ${info.memory.textures}`
-    )
-
     this.debug.end()
     requestAnimationFrame(() => this.tick())
   }
 
   destroy() {
     window.removeEventListener('resize', () => this.onResize())
+    this.terrain.dispose()
+    this.lighting.dispose()
+    this.sky.dispose()
     this.debug.destroy()
     this.camera.destroy()
     this.renderer.destroy()
