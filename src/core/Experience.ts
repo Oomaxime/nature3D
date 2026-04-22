@@ -5,6 +5,7 @@ import Debug from '../debug/Debug'
 import Terrain from '../world/Terrain'
 import Lighting from '../world/Lighting'
 import SkyEnvironment from '../world/SkyEnvironment'
+import Grass from '../world/Grass'
 
 export default class Experience {
   canvas: HTMLCanvasElement
@@ -16,6 +17,9 @@ export default class Experience {
   private terrain: Terrain
   private lighting: Lighting
   private sky: SkyEnvironment
+  private grass: Grass
+
+  private clock = new THREE.Clock()
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas   = canvas
@@ -27,6 +31,7 @@ export default class Experience {
     this.lighting = new Lighting(this.scene)
     this.sky      = new SkyEnvironment(this.scene, this.renderer.instance)
     this.terrain  = new Terrain(this.scene)
+    this.grass    = new Grass(this.scene, this.terrain)
 
     window.addEventListener('resize', () => this.onResize())
     this.tick()
@@ -39,6 +44,8 @@ export default class Experience {
 
   private tick() {
     this.debug.begin()
+    const elapsed = this.clock.getElapsedTime()
+    this.grass.update(elapsed)
     this.camera.update()
     this.renderer.render(this.scene, this.camera.instance)
     this.debug.end()
@@ -50,6 +57,7 @@ export default class Experience {
     this.terrain.dispose()
     this.lighting.dispose()
     this.sky.dispose()
+    this.grass.dispose()
     this.debug.destroy()
     this.camera.destroy()
     this.renderer.destroy()

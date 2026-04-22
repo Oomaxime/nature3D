@@ -4,11 +4,16 @@ const TERRAIN_SIZE = 200
 const TERRAIN_SEGMENTS = 200
 
 // Lake parameters (world-space, in local plane coordinates)
-const LAKE_INNER_RADIUS = 18
+export const LAKE_INNER_RADIUS = 18
 const LAKE_OUTER_RADIUS = 32
 const LAKE_FLOOR_Y = -1.8
 
 export const LAKE_SURFACE_Y = -0.5 // water plane sits here
+
+export function getTerrainHeight(worldX: number, worldZ: number): number {
+  // Terrain rotation.x = -PI/2 maps local.y → -world.z
+  return computeHeight(worldX, -worldZ)
+}
 
 function computeHeight(x: number, y: number): number {
   // Layered sine waves – FBM-like hills
