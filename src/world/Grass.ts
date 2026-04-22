@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js'
+import type GUI from 'lil-gui'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import Terrain, { LAKE_INNER_RADIUS, getTerrainHeight } from './Terrain'
 
@@ -29,8 +29,7 @@ export default class Grass {
 
   constructor(scene: THREE.Scene, terrain: Terrain) {
     const geo = buildCrossGeometry()
-    terrain.mesh.updateWorldMatrix(true, false)
-    const sampler = new MeshSurfaceSampler(terrain.mesh).build()
+    const sampler = terrain.sampler
 
     const loader = new THREE.TextureLoader()
     const baseTex = loader.load('/textures/herbe/color.png')
@@ -118,6 +117,16 @@ export default class Grass {
       scene.add(mesh)
       this.meshes.push(mesh)
     }
+  }
+
+  setupGui(gui: GUI) {
+    const folder = gui.addFolder('Grass')
+    const total  = COUNT_PER_VARIANT * UV_OFFSETS.length
+    const params = { count: total }
+    folder.add(params, 'count', 0, total, 1).name('Count').onChange((v: number) => {
+      const perVariant = Math.round(v / this.meshes.length)
+      this.meshes.forEach(m => { m.count = Math.min(perVariant, COUNT_PER_VARIANT) })
+    })
   }
 
   update(time: number) {

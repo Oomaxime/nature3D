@@ -6,6 +6,8 @@ import Terrain from '../world/Terrain'
 import Lighting from '../world/Lighting'
 import SkyEnvironment from '../world/SkyEnvironment'
 import Grass from '../world/Grass'
+import Bushes from '../world/Bushes'
+import Flowers from '../world/Flowers'
 
 export default class Experience {
   canvas: HTMLCanvasElement
@@ -18,6 +20,8 @@ export default class Experience {
   private lighting: Lighting
   private sky: SkyEnvironment
   private grass: Grass
+  private bushes: Bushes
+  private flowers: Flowers
 
   private clock = new THREE.Clock()
 
@@ -32,6 +36,17 @@ export default class Experience {
     this.sky      = new SkyEnvironment(this.scene, this.renderer.instance)
     this.terrain  = new Terrain(this.scene)
     this.grass    = new Grass(this.scene, this.terrain)
+    this.bushes   = new Bushes(this.scene, this.terrain)
+    this.flowers  = new Flowers(this.scene, this.terrain)
+
+    // Pre-compile all synchronous shaders (terrain, grass wind, bushes, flowers, sky)
+    this.renderer.compile(this.scene, this.camera.instance)
+
+    // GUI panels
+    this.lighting.setupGui(this.debug.gui)
+    this.grass.setupGui(this.debug.gui)
+    this.bushes.setupGui(this.debug.gui)
+    this.flowers.setupGui(this.debug.gui)
 
     window.addEventListener('resize', () => this.onResize())
     this.tick()
@@ -46,6 +61,8 @@ export default class Experience {
     this.debug.begin()
     const elapsed = this.clock.getElapsedTime()
     this.grass.update(elapsed)
+    this.bushes.update(elapsed)
+    this.flowers.update(elapsed)
     this.camera.update()
     this.renderer.render(this.scene, this.camera.instance)
     this.debug.end()
@@ -58,6 +75,8 @@ export default class Experience {
     this.lighting.dispose()
     this.sky.dispose()
     this.grass.dispose()
+    this.bushes.dispose()
+    this.flowers.dispose()
     this.debug.destroy()
     this.camera.destroy()
     this.renderer.destroy()

@@ -1,9 +1,8 @@
 import * as THREE from 'three'
+import type GUI from 'lil-gui'
 
-// Sun direction shared with Sky shader
 export const SUN_POSITION = new THREE.Vector3()
 
-// Sunset: sun just above the western horizon
 const ELEVATION_DEG = 4
 const AZIMUTH_DEG   = 200
 
@@ -14,18 +13,15 @@ SUN_POSITION.setFromSphericalCoords(1, phi, theta)
 export default class Lighting {
   hemisphere: THREE.HemisphereLight
   sun: THREE.DirectionalLight
+  fog: THREE.FogExp2
 
   constructor(scene: THREE.Scene) {
-    // Soft ambient fill – warm sky above, dark earth below
     this.hemisphere = new THREE.HemisphereLight(0xffc878, 0x3d1e08, 0.9)
     scene.add(this.hemisphere)
 
-    // Single directional "sun" – warm orange, casts shadows
     this.sun = new THREE.DirectionalLight(0xff8c42, 2.0)
     this.sun.position.copy(SUN_POSITION).multiplyScalar(100)
     this.sun.castShadow = true
-
-    // Shadow map – 1024 is a good balance of quality / perf
     this.sun.shadow.mapSize.set(1024, 1024)
     this.sun.shadow.camera.near   = 0.5
     this.sun.shadow.camera.far    = 250
@@ -34,12 +30,41 @@ export default class Lighting {
     this.sun.shadow.camera.top    =  80
     this.sun.shadow.camera.bottom = -80
     this.sun.shadow.bias          = -0.001
-
     scene.add(this.sun)
     scene.add(this.sun.target)
 
-    // Warm exponential fog that thickens towards the horizon
-    scene.fog = new THREE.FogExp2(0xd4703a, 0.007)
+    this.fog = new THREE.FogExp2(0xd4703a, 0.007)
+    scene.fog = this.fog
+  }
+
+  setupGui(gui: GUI) {
+    const folder = gui.addFolder('Lights')
+
+    // — Sun —
+    const sunFolder = folder.addFolder('Sun')
+    const sunParams = { color: '#' + this.sun.color.getHexString() }
+    sunFolder.addColor(sunParams, 'color').name('Color')
+      .onChange((v: string) => this.sun.color.set(v))
+    sunFolder.add(this.sun, 'intensity', 0, 6, 0.05).name('Intensity')
+
+    // — Hemisphere —
+    const hemiFolder = folder.addFolder('Hemisphere')
+    const hemiParams = {
+      skyColor:    '#' + this.hemisphere.color.getHexString(),
+      groundColor: '#' + this.hemisphere.groundColor.getHexString(),
+    }
+    hemiFolder.addColor(hemiParams, 'skyColor').name('Sky color')
+      .onChange((v: string) => this.hemisphere.color.set(v))
+    hemiFolder.addColor(hemiParams, 'groundColor').name('Ground color')
+      .onChange((v: string) => this.hemisphere.groundColor.set(v))
+    hemiFolder.add(this.hemisphere, 'intensity', 0, 3, 0.05).name('Intensity')
+
+    // — Fog —
+    const fogFolder = folder.addFolder('Fog')
+    const fogParams = { color: '#' + this.fog.color.getHexString() }
+    fogFolder.addColor(fogParams, 'color').name('Color')
+      .onChange((v: string) => this.fog.color.set(v))
+    fogFolder.add(this.fog, 'density', 0, 0.05, 0.0005).name('Density')
   }
 
   dispose() {

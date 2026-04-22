@@ -12,16 +12,15 @@ export default class Camera {
       0.5,
       2000
     )
-    // Perched on a hill looking across the lake toward the sunset
     this.instance.position.set(40, 22, 70)
 
     this.controls = new OrbitControls(this.instance, canvas)
-    this.controls.enableDamping  = true
-    this.controls.dampingFactor  = 0.05
+    this.controls.enableDamping = true
+    this.controls.dampingFactor = 0.05
     this.controls.target.set(0, 2, 0)
-    this.controls.maxPolarAngle  = Math.PI / 2.1 // prevent going underground
-    this.controls.minDistance    = 5
-    this.controls.maxDistance    = 180
+    this.controls.maxPolarAngle = Math.PI / 2.1
+    this.controls.minDistance   = 5
+    this.controls.maxDistance   = 180
   }
 
   resize() {

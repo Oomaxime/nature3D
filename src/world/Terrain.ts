@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js'
 
 const TERRAIN_SIZE = 200
 const TERRAIN_SEGMENTS = 200
@@ -41,6 +42,7 @@ function computeHeight(x: number, y: number): number {
 
 export default class Terrain {
   mesh: THREE.Mesh
+  sampler!: MeshSurfaceSampler
 
   constructor(scene: THREE.Scene) {
     const geometry = new THREE.PlaneGeometry(
@@ -81,8 +83,11 @@ export default class Terrain {
     this.mesh = new THREE.Mesh(geometry, material)
     this.mesh.rotation.x = -Math.PI / 2
     this.mesh.receiveShadow = true
-
     scene.add(this.mesh)
+
+    // Built once, shared by all vegetation/props classes
+    this.mesh.updateWorldMatrix(true, false)
+    this.sampler = new MeshSurfaceSampler(this.mesh).build()
   }
 
   dispose() {

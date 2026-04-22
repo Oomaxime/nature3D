@@ -23,6 +23,12 @@ export default class Renderer {
     this.instance.render(scene, camera)
   }
 
+  /** Pre-compile all shaders currently in the scene to avoid first-frame stutter.
+   *  Call again after async assets (GLBs) are added. */
+  compile(scene: THREE.Scene, camera: THREE.Camera) {
+    this.instance.compile(scene, camera)
+  }
+
   destroy() {
     this.instance.dispose()
   }
