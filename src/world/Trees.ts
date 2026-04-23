@@ -11,7 +11,7 @@ const MIN_LAKE = LAKE_OUTER_RADIUS + 8; // 40 units — 8 m clear shore margin
 
 // LOD distance thresholds (world units from camera)
 const DIST_HIGH = 60;  // Full PBR with normals + shadows
-const DIST_LOW  = 220; // Simplified PBR, no normals — impostor only on far horizon
+const DIST_LOW  = 290; // Simplified PBR — with hysteresis, guaranteed no impostor within terrain at max zoom
 // Beyond DIST_LOW → camera-facing billboard imposter
 
 const MAX_HIGH = 80;
