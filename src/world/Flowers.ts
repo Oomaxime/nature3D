@@ -35,10 +35,20 @@ function buildCross(): THREE.BufferGeometry {
   return mergeGeometries([g1, g2])!
 }
 
+interface FlowerPlacement { wx: number; wy: number; wz: number; rotY: number; s: number }
+
+function makeRng(seed: number) {
+  let s = seed >>> 0
+  return () => { s ^= s << 13; s ^= s >> 17; s ^= s << 5; return (s >>> 0) / 4294967296 }
+}
+
 export default class Flowers {
   private mesh: THREE.InstancedMesh
   private windUniform = { value: 0 }
   private maxCount = COUNT
+  private placements: FlowerPlacement[] = []
+  private scaleMult = 1.5
+  private dummyF = new THREE.Object3D()
 
   constructor(scene: THREE.Scene, terrain: Terrain) {
     const geo      = buildCross()
@@ -81,8 +91,10 @@ export default class Flowers {
 
     const sampler = terrain.sampler
     const localPos = new THREE.Vector3()
-    const dummy    = new THREE.Object3D()
     let placed = 0, attempts = 0
+
+    const origRand = Math.random
+    Math.random = makeRng(45)
 
     while (placed < COUNT && attempts < COUNT * 10) {
       attempts++
@@ -90,21 +102,35 @@ export default class Flowers {
       const wx = localPos.x
       const wz = -localPos.y
       if (Math.sqrt(wx * wx + wz * wz) < LAKE_INNER_RADIUS + 3) continue
-      dummy.position.set(wx, getTerrainHeight(wx, wz) - 0.08, wz)
-      dummy.rotation.y = Math.random() * Math.PI * 2
-      const s = 0.65 + Math.random() * 0.8
-      dummy.scale.set(s, s, s)
-      dummy.updateMatrix()
-      this.mesh.setMatrixAt(placed++, dummy.matrix)
+      this.placements.push({ wx, wy: getTerrainHeight(wx, wz) - 0.08, wz, rotY: Math.random() * Math.PI * 2, s: 0.65 + Math.random() * 0.8 })
+      placed++
     }
 
-    this.mesh.instanceMatrix.needsUpdate = true
+    Math.random = origRand
+    this.rebuildMatrices()
+    this.mesh.count = 300
     scene.add(this.mesh)
+  }
+
+  private rebuildMatrices() {
+    const d = this.dummyF
+    for (let i = 0; i < this.placements.length; i++) {
+      const p = this.placements[i]
+      d.position.set(p.wx, p.wy, p.wz)
+      d.rotation.y = p.rotY
+      const s = p.s * this.scaleMult
+      d.scale.set(s, s, s)
+      d.updateMatrix()
+      this.mesh.setMatrixAt(i, d.matrix)
+    }
+    this.mesh.instanceMatrix.needsUpdate = true
   }
 
   setupGui(gui: GUI) {
     const folder = gui.addFolder('Flowers')
-    const params = { count: this.maxCount }
+    const params = { count: 300, scale: 1.5 }
+    folder.add(params, 'scale', 0.1, 4.0, 0.05).name('Scale')
+      .onChange((v: number) => { this.scaleMult = v; this.rebuildMatrices() })
     folder.add(params, 'count', 0, this.maxCount, 1).name('Count')
       .onChange((v: number) => { this.mesh.count = Math.round(v) })
   }

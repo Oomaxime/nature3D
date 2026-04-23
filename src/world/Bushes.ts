@@ -4,6 +4,13 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import Terrain, { LAKE_INNER_RADIUS, getTerrainHeight } from './Terrain'
 
 const BUSH_COUNT  = 400
+
+function makeRng(seed: number) {
+  let s = seed >>> 0
+  return () => { s ^= s << 13; s ^= s >> 17; s ^= s << 5; return (s >>> 0) / 4294967296 }
+}
+
+interface BushPlacement { wx: number; wy: number; wz: number; rotY: number; sx: number; sy: number }
 const BUSH_W      = 2.6
 const BUSH_H      = 2.0
 const PLANES      = 3   // star pattern: 0° / 60° / 120°
@@ -23,6 +30,9 @@ function buildBushGeometry(): THREE.BufferGeometry {
 export default class Bushes {
   private mesh: THREE.InstancedMesh
   private windUniform = { value: 0 }
+  private placements: BushPlacement[] = []
+  private scaleMult = 1.0
+  private dummy2 = new THREE.Object3D()
 
   constructor(scene: THREE.Scene, terrain: Terrain) {
     const geo = buildBushGeometry()
@@ -76,6 +86,9 @@ export default class Bushes {
     const localPos = new THREE.Vector3()
     const dummy    = new THREE.Object3D()
 
+    const origRand = Math.random
+    Math.random = makeRng(43)
+
     let placed = 0, attempts = 0
 
     while (placed < BUSH_COUNT && attempts < BUSH_COUNT * 10) {
@@ -89,24 +102,40 @@ export default class Bushes {
       if (d < LAKE_INNER_RADIUS + 4) continue
 
       const wy = getTerrainHeight(wx, wz) - 0.15
+      const rotY = Math.random() * Math.PI * 2
+      const sx = 0.7 + Math.random() * 1.1
+      const sy = sx * (0.85 + Math.random() * 0.3)
 
-      dummy.position.set(wx, wy, wz)
-      dummy.rotation.y = Math.random() * Math.PI * 2
-      const s = 0.7 + Math.random() * 1.1
-      dummy.scale.set(s, s * (0.85 + Math.random() * 0.3), s) // slight Y variety
-      dummy.updateMatrix()
-
-      this.mesh.setMatrixAt(placed, dummy.matrix)
+      this.placements.push({ wx, wy, wz, rotY, sx, sy })
       placed++
     }
 
+    Math.random = origRand
+    this.rebuildMatrices()
+
+    this.mesh.count = 200
     this.mesh.instanceMatrix.needsUpdate = true
     scene.add(this.mesh)
   }
 
+  private rebuildMatrices() {
+    const d = this.dummy2
+    for (let i = 0; i < this.placements.length; i++) {
+      const p = this.placements[i]
+      d.position.set(p.wx, p.wy, p.wz)
+      d.rotation.set(0, p.rotY, 0)
+      d.scale.set(p.sx * this.scaleMult, p.sy * this.scaleMult, p.sx * this.scaleMult)
+      d.updateMatrix()
+      this.mesh.setMatrixAt(i, d.matrix)
+    }
+    this.mesh.instanceMatrix.needsUpdate = true
+  }
+
   setupGui(gui: GUI) {
     const folder = gui.addFolder('Bushes')
-    const params = { count: BUSH_COUNT }
+    const params = { count: 200, scale: 1.0 }
+    folder.add(params, 'scale', 0.1, 4.0, 0.05).name('Scale')
+      .onChange((v: number) => { this.scaleMult = v; this.rebuildMatrices() })
     folder.add(params, 'count', 0, BUSH_COUNT, 1).name('Count')
       .onChange((v: number) => { this.mesh.count = Math.round(v) })
   }
