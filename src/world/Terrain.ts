@@ -6,7 +6,7 @@ const TERRAIN_SEGMENTS = 200
 
 // Lake parameters (world-space, in local plane coordinates)
 export const LAKE_INNER_RADIUS = 18
-const LAKE_OUTER_RADIUS = 32
+export const LAKE_OUTER_RADIUS = 32
 const LAKE_FLOOR_Y = -1.8
 
 export const LAKE_SURFACE_Y = -0.5 // water plane sits here
