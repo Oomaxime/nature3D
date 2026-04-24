@@ -156,7 +156,6 @@ export default class Grass {
 
   setupGui(gui: GUI) {
     const folder = gui.addFolder("Grass");
-    const total = COUNT_PER_VARIANT * UV_OFFSETS.length;
     const defaultCount = 10_000;
     this.meshes.forEach((m) => {
       m.count = Math.round(defaultCount / this.meshes.length);
@@ -170,7 +169,7 @@ export default class Grass {
         this.rebuildMatrices();
       });
     folder
-      .add(params, "count", 0, total, 1)
+      .add(params, "count", 0, 12_000, 1)
       .name("Count")
       .onChange((v: number) => {
         const perVariant = Math.round(v / this.meshes.length);

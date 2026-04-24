@@ -149,7 +149,7 @@ export default class Bushes {
         this.rebuildMatrices();
       });
     folder
-      .add(params, "count", 0, BUSH_COUNT, 1)
+      .add(params, "count", 0, 300, 1)
       .name("Count")
       .onChange((v: number) => {
         this.mesh.count = Math.round(v);

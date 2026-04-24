@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import type GUI from "lil-gui";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { LAKE_INNER_RADIUS, LAKE_SURFACE_Y, getTerrainHeight } from "./Terrain";
 import { SUN_POSITION } from "./Lighting";
@@ -207,10 +206,6 @@ export default class Lake {
 
   update(elapsed: number) {
     this.material.uniforms.uTime.value = elapsed;
-  }
-
-  setupGui(gui: GUI) {
-    gui.addFolder("Water").close();
   }
 
   dispose() {

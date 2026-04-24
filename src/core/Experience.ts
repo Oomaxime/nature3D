@@ -79,10 +79,8 @@ export default class Experience {
     this.bushes.setupGui(this.debug.gui);
     this.flowers.setupGui(this.debug.gui);
     this.trees.setupGui(this.debug.gui);
-    this.lake.setupGui(this.debug.gui);
     this.shoreProps.setupGui(this.debug.gui);
     this.fireflies.setupGui(this.debug.gui);
-    this.postProcessing.setupGui(this.debug.gui);
 
     window.addEventListener("resize", () => this.onResize());
     this.tick();

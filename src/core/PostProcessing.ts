@@ -4,8 +4,6 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
-import type GUI from "lil-gui";
-
 const ClampShader = {
   uniforms: { tDiffuse: { value: null } },
   vertexShader: `varying vec2 vUv;
@@ -48,13 +46,6 @@ export default class PostProcessing {
   resize() {
     this.composer.setSize(window.innerWidth, window.innerHeight);
     this.bloom.setSize(window.innerWidth, window.innerHeight);
-  }
-
-  setupGui(gui: GUI) {
-    const folder = gui.addFolder("Bloom").close();
-    folder.add(this.bloom, "strength", 0, 3, 0.05).name("Strength");
-    folder.add(this.bloom, "radius", 0, 1, 0.05).name("Radius");
-    folder.add(this.bloom, "threshold", 0, 1, 0.01).name("Threshold");
   }
 
   dispose() {
