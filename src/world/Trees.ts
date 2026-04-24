@@ -19,15 +19,7 @@ const HYSTERESIS = 0.15;
 const IMP_W = 5.5;
 const IMP_H = 5.0;
 
-function makeRng(seed: number) {
-  let s = seed >>> 0;
-  return () => {
-    s ^= s << 13;
-    s ^= s >> 17;
-    s ^= s << 5;
-    return (s >>> 0) / 4294967296;
-  };
-}
+import { makeRng } from "../utils/rng";
 
 function buildBillboardGeo(): THREE.BufferGeometry {
   const g = new THREE.PlaneGeometry(IMP_W, IMP_H);

@@ -2,19 +2,10 @@ import * as THREE from "three";
 import type GUI from "lil-gui";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import Terrain, { LAKE_INNER_RADIUS, getTerrainHeight } from "./Terrain";
+import { makeRng } from "../utils/rng";
 
 const COUNT_PER_VARIANT = 125_000;
 const BLADE_HEIGHT = 1.2;
-
-function makeRng(seed: number) {
-  let s = seed >>> 0;
-  return () => {
-    s ^= s << 13;
-    s ^= s >> 17;
-    s ^= s << 5;
-    return (s >>> 0) / 4294967296;
-  };
-}
 
 interface GrassBlade {
   wx: number;

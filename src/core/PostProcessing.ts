@@ -39,7 +39,7 @@ export default class PostProcessing {
     this.composer.addPass(new OutputPass());
   }
 
-  update(_camera: THREE.PerspectiveCamera) {}
+  update() {}
 
   render() {
     this.composer.render();

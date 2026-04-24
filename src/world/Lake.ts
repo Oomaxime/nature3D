@@ -87,7 +87,7 @@ void main() {
   vec3  H    = normalize(L + V);
   float spec = pow(max(dot(N, H), 0.0), 200.0) * 1.1;
 
-  vec2 toCamera    = normalize(vec2(40.0, 70.0));
+  vec2 toCamera    = normalize(vec2(-51.3, 3.3));
   float worldDist  = length(vWorldPos.xz);
   vec2 lakeDir     = worldDist > 0.1 ? normalize(vWorldPos.xz) : vec2(0.0);
   float facingCam  = dot(lakeDir, toCamera);

@@ -104,7 +104,7 @@ export default class Experience {
     this.fireflies.update(elapsed);
     this.lake.update(elapsed);
     this.camera.update();
-    this.postProcessing.update(this.camera.instance);
+    this.postProcessing.update();
     this.postProcessing.render();
     this.debug.end();
     requestAnimationFrame(() => this.tick());

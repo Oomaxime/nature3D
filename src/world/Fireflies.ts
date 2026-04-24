@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import type GUI from "lil-gui";
 import { LAKE_INNER_RADIUS } from "./Terrain";
+import { makeRng } from "../utils/rng";
 
 const COUNT = 70;
 
@@ -15,16 +16,6 @@ function makeGlowTexture(): THREE.CanvasTexture {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 64, 64);
   return new THREE.CanvasTexture(c);
-}
-
-function makeRng(seed: number) {
-  let s = seed >>> 0;
-  return () => {
-    s ^= s << 13;
-    s ^= s >> 17;
-    s ^= s << 5;
-    return (s >>> 0) / 4294967296;
-  };
 }
 
 export default class Fireflies {
