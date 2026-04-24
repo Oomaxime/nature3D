@@ -3,7 +3,6 @@ import type GUI from "lil-gui";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MeshSurfaceSampler } from "three/addons/math/MeshSurfaceSampler.js";
 import Terrain, { LAKE_INNER_RADIUS, getTerrainHeight } from "./Terrain";
-import type Renderer from "../core/Renderer";
 
 const STUMP_COUNT = 60;
 const LOG_COUNT = 40;
@@ -112,7 +111,7 @@ export default class Props {
   constructor(
     scene: THREE.Scene,
     terrain: Terrain,
-    renderer: Renderer,
+    renderer: THREE.WebGLRenderer,
     camera: THREE.Camera,
   ) {
     const loader = new GLTFLoader();

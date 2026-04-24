@@ -15,6 +15,7 @@ interface PropGroup {
   name: string;
   path: string;
   instances: Instance[];
+  zoneThreshold: number;
   mesh?: THREE.InstancedMesh;
 }
 
@@ -22,6 +23,7 @@ const GROUPS: PropGroup[] = [
   {
     name: "Rocks",
     path: "/models/RockBoulderLarge054/RockBoulderLarge054_Blender_Cycles.glb",
+    zoneThreshold: 3,
     instances: [
       { x: -18.6, z: -17.2, rotY: 4.6, scale: 2.5 },
       { x: -17.2, z: -18.6, rotY: 0.0, scale: 2.5 },
@@ -34,8 +36,6 @@ const GROUPS: PropGroup[] = [
 
 export default class ShoreProps {
   private groups: PropGroup[] = GROUPS;
-  private scene: THREE.Scene;
-  private camera: THREE.Camera;
   private allMeshes: THREE.InstancedMesh[] = [];
 
   constructor(
@@ -43,8 +43,6 @@ export default class ShoreProps {
     renderer: THREE.WebGLRenderer,
     camera: THREE.Camera,
   ) {
-    this.scene = scene;
-    this.camera = camera;
     const draco = new DRACOLoader();
     draco.setDecoderPath("/draco/");
     const loader = new GLTFLoader();
@@ -114,23 +112,13 @@ export default class ShoreProps {
   setupGui(gui: GUI) {
     const root = gui.addFolder("Shore Props").close();
 
-    const zoneLabel = (groupName: string, i: number) => {
-      const thresholds: Record<string, number> = {
-        Rocks: 3,
-        Logs: 1,
-        Stumps: 1,
-      };
-      const thresh = thresholds[groupName] ?? 1;
-      const zone = i < thresh ? "Z1" : "Z2";
-      return `${zone} · ${groupName[0]}${i}`;
-    };
-
     for (const group of this.groups) {
       const gf = root.addFolder(group.name).close();
 
       for (let i = 0; i < group.instances.length; i++) {
         const inst = group.instances[i];
-        const label = zoneLabel(group.name, i);
+        const zone = i < group.zoneThreshold ? "Z1" : "Z2";
+        const label = `${zone} · ${group.name[0]}${i}`;
         const f = gf.addFolder(label).close();
         const update = () => this.applyInstances(group);
 
