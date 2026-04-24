@@ -16,14 +16,14 @@ export default class Camera {
 
     this.controls = new OrbitControls(this.instance, canvas);
     this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.04; // lower = longer glide, more cinematic
-    this.controls.rotateSpeed = 0.55; // slower rotation feels more deliberate
+    this.controls.dampingFactor = 0.04;
+    this.controls.rotateSpeed = 0.55;
     this.controls.zoomSpeed = 0.7;
     this.controls.target.set(0, 2, 0);
-    this.controls.minPolarAngle = Math.PI / 10; // can't look straight down at ground
-    this.controls.maxPolarAngle = Math.PI / 2.15; // can't go below the horizon
+    this.controls.minPolarAngle = Math.PI / 10;
+    this.controls.maxPolarAngle = Math.PI / 2.15;
     this.controls.minDistance = 8;
-    this.controls.maxDistance = 140; // tight enough that terrain always looks good
+    this.controls.maxDistance = 140;
   }
 
   resize() {
@@ -33,11 +33,6 @@ export default class Camera {
 
   update() {
     this.controls.update();
-    const p = this.instance.position;
-    const t = this.controls.target;
-    console.log(
-      `position.set(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)})  target.set(${t.x.toFixed(1)}, ${t.y.toFixed(1)}, ${t.z.toFixed(1)})`,
-    );
   }
 
   destroy() {

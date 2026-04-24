@@ -1,15 +1,15 @@
-import * as THREE from 'three'
-import { getTerrainHeight, LAKE_SURFACE_Y } from './Terrain'
+import * as THREE from "three";
+import { getTerrainHeight, LAKE_SURFACE_Y } from "./Terrain";
 
-const RIVER_WAYPOINTS: [number, number][] = []
-import { SUN_POSITION } from './Lighting'
+const RIVER_WAYPOINTS: [number, number][] = [];
+import { SUN_POSITION } from "./Lighting";
 
-const RIVER_HALF_WIDTH = 2.2
-const SAMPLES = 140
+const RIVER_HALF_WIDTH = 2.2;
+const SAMPLES = 140;
 
 // ── Shaders ───────────────────────────────────────────────────────────────────
 
-const VERT = /* glsl */`
+const VERT = /* glsl */ `
 varying vec3 vWorldPos;
 varying vec3 vViewDir;
 varying vec2 vUv;
@@ -21,9 +21,9 @@ void main() {
   vUv       = uv;
   gl_Position = projectionMatrix * viewMatrix * wp;
 }
-`
+`;
 
-const FRAG = /* glsl */`
+const FRAG = /* glsl */ `
 precision highp float;
 
 uniform float uTime;
@@ -102,91 +102,96 @@ void main() {
 
   gl_FragColor = vec4(waterColor, (0.88 + fresnel * 0.10) * edgeAlpha);
 }
-`
+`;
 
 // ── Geometry ──────────────────────────────────────────────────────────────────
 
 function interpolatePath(t: number): { x: number; z: number } {
-  const n   = RIVER_WAYPOINTS.length - 1
-  const seg = Math.min(Math.floor(t * n), n - 1)
-  const st  = t * n - seg
-  const [ax, az] = RIVER_WAYPOINTS[seg]
-  const [bx, bz] = RIVER_WAYPOINTS[seg + 1]
-  return { x: ax + (bx - ax) * st, z: az + (bz - az) * st }
+  const n = RIVER_WAYPOINTS.length - 1;
+  const seg = Math.min(Math.floor(t * n), n - 1);
+  const st = t * n - seg;
+  const [ax, az] = RIVER_WAYPOINTS[seg];
+  const [bx, bz] = RIVER_WAYPOINTS[seg + 1];
+  return { x: ax + (bx - ax) * st, z: az + (bz - az) * st };
 }
 
 function buildGeometry(): THREE.BufferGeometry {
-  const pos: number[] = []
-  const uvs: number[] = []
-  const idx: number[] = []
+  const pos: number[] = [];
+  const uvs: number[] = [];
+  const idx: number[] = [];
 
   for (let i = 0; i <= SAMPLES; i++) {
-    const t = i / SAMPLES
-    const c = interpolatePath(t)
+    const t = i / SAMPLES;
+    const c = interpolatePath(t);
 
     // Tangent via finite difference
-    const p0 = interpolatePath(Math.max(0, t - 1 / SAMPLES))
-    const p1 = interpolatePath(Math.min(1, t + 1 / SAMPLES))
-    const tx = p1.x - p0.x, tz = p1.z - p0.z
-    const len = Math.sqrt(tx * tx + tz * tz) || 1
+    const p0 = interpolatePath(Math.max(0, t - 1 / SAMPLES));
+    const p1 = interpolatePath(Math.min(1, t + 1 / SAMPLES));
+    const tx = p1.x - p0.x,
+      tz = p1.z - p0.z;
+    const len = Math.sqrt(tx * tx + tz * tz) || 1;
     // Right-perpendicular in XZ
-    const rx = tz / len, rz = -tx / len
+    const rx = tz / len,
+      rz = -tx / len;
 
-    const cy = getTerrainHeight(c.x, c.z) + 0.08
+    const cy = getTerrainHeight(c.x, c.z) + 0.08;
 
     pos.push(
-      c.x - rx * RIVER_HALF_WIDTH, cy, c.z - rz * RIVER_HALF_WIDTH,
-      c.x + rx * RIVER_HALF_WIDTH, cy, c.z + rz * RIVER_HALF_WIDTH,
-    )
-    uvs.push(0, t,  1, t)
+      c.x - rx * RIVER_HALF_WIDTH,
+      cy,
+      c.z - rz * RIVER_HALF_WIDTH,
+      c.x + rx * RIVER_HALF_WIDTH,
+      cy,
+      c.z + rz * RIVER_HALF_WIDTH,
+    );
+    uvs.push(0, t, 1, t);
 
     if (i < SAMPLES) {
-      const b = i * 2
-      idx.push(b, b + 2, b + 1,  b + 1, b + 2, b + 3)
+      const b = i * 2;
+      idx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
     }
   }
 
-  const geo = new THREE.BufferGeometry()
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
-  geo.setAttribute('uv',       new THREE.Float32BufferAttribute(uvs, 2))
-  geo.setIndex(idx)
-  geo.computeVertexNormals()
-  return geo
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return geo;
 }
 
 // ── Class ─────────────────────────────────────────────────────────────────────
 
 export default class River {
-  private mesh:     THREE.Mesh
-  private material: THREE.ShaderMaterial
+  private mesh: THREE.Mesh;
+  private material: THREE.ShaderMaterial;
 
   constructor(scene: THREE.Scene) {
     this.material = new THREE.ShaderMaterial({
-      vertexShader:   VERT,
+      vertexShader: VERT,
       fragmentShader: FRAG,
       uniforms: {
-        uTime:       { value: 0 },
-        uSunDir:     { value: SUN_POSITION.clone().normalize() },
-        uSunColor:   { value: new THREE.Color(0xff8c42) },
+        uTime: { value: 0 },
+        uSunDir: { value: SUN_POSITION.clone().normalize() },
+        uSunColor: { value: new THREE.Color(0xff8c42) },
         uFogDensity: { value: 0.007 },
-        uFogColor:   { value: new THREE.Color(0xd4703a) },
+        uFogColor: { value: new THREE.Color(0xd4703a) },
       },
       transparent: true,
-      depthWrite:  true,
-      side:        THREE.DoubleSide,
-    })
+      depthWrite: true,
+      side: THREE.DoubleSide,
+    });
 
-    this.mesh = new THREE.Mesh(buildGeometry(), this.material)
-    scene.add(this.mesh)
+    this.mesh = new THREE.Mesh(buildGeometry(), this.material);
+    scene.add(this.mesh);
   }
 
   update(elapsed: number) {
-    this.material.uniforms.uTime.value = elapsed
+    this.material.uniforms.uTime.value = elapsed;
   }
 
   dispose() {
-    this.mesh.geometry.dispose()
-    this.material.dispose()
+    this.mesh.geometry.dispose();
+    this.material.dispose();
   }
 }
-
